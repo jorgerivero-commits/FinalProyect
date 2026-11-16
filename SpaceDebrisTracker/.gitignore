@@ -1,0 +1,10 @@
+# Credenciales y configuración local
+.env
+
+# Binarios compilados
+bin/
+cpp/kepler_j2_engine
+
+# Datos descargados dinámicamente
+data/
+cpp/kepler_j2_engine.exe
