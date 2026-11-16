@@ -1,43 +1,50 @@
 package com.spacedebris.service;
 
 import com.spacedebris.model.Satellite;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrbitCalculatorService {
 
-  private DatabaseService dbService = new DatabaseService();
+  private final File engineBinary;
 
-  public List<Satellite> fetchSimulatedOrbits() {
-    List<Satellite> updatedSatellites = new ArrayList<>();
+  public OrbitCalculatorService() {
     boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
-    File cppBinary = new File(isWindows ? "./cpp/kepler_j2_engine.exe" : "./cpp/kepler_j2_engine");
+    this.engineBinary = new File(
+        isWindows ? "./orbital-engine/kepler_j2_engine.exe" : "./orbital-engine/kepler_j2_engine");
+  }
 
-    if (!cppBinary.exists()) {
-      System.err.println("Advertencia: El binario de C++ no se encontró. Compílalo primero.");
+  public List<Satellite> propagateOrbits(List<Satellite> rawDebrisList) {
+    return propagateOrbits(rawDebrisList, Instant.now().getEpochSecond());
+  }
+
+  public List<Satellite> propagateOrbits(List<Satellite> rawDebrisList, long targetEpochSeconds) {
+    List<Satellite> updatedSatellites = new ArrayList<>();
+
+    if (rawDebrisList == null || rawDebrisList.isEmpty()) {
+      System.err.println("Advertencia: No hay TLEs para enviar al Motor Orbital.");
+      return updatedSatellites;
+    }
+
+    if (!engineBinary.exists()) {
+      System.err.println("Advertencia: Binario del Motor Orbital no encontrado en " + engineBinary.getPath());
       return updatedSatellites;
     }
 
     try {
-      // 1. Obtener los TLEs que Java guardó previamente en MySQL
-      List<Satellite> rawDebrisList = dbService.getRawDebrisFromDatabase();
-
-      if (rawDebrisList.isEmpty()) {
-        System.err.println("No hay TLEs en la base de datos para enviar a C++.");
-        return updatedSatellites;
-      }
-
-      // 2. Configurar el proceso para C++ usando ruta relativa
-      ProcessBuilder pb = new ProcessBuilder(cppBinary.getPath());
+      ProcessBuilder pb = new ProcessBuilder(
+          engineBinary.getPath(),
+          String.valueOf(targetEpochSeconds));
       pb.redirectErrorStream(true);
       Process process = pb.start();
 
-      // 3. Enviar los TLEs de la base de datos a C++ a través de Stdin
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
         for (Satellite sat : rawDebrisList) {
           writer.write(sat.getId() + "\n");
@@ -48,13 +55,11 @@ public class OrbitCalculatorService {
         writer.flush();
       }
 
-      // 4. Leer la respuesta de C++ desde Stdout
       try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
         String line;
         while ((line = reader.readLine()) != null) {
           if (line.startsWith("DEBRIS_DATA:")) {
-            String dataPart = line.substring(12);
-            String[] parts = dataPart.split("\\|");
+            String[] parts = line.substring(12).split("\\|");
             if (parts.length >= 5) {
               int id = Integer.parseInt(parts[0].trim());
               String name = parts[1].trim();
@@ -65,7 +70,7 @@ public class OrbitCalculatorService {
               updatedSatellites.add(new Satellite(id, name, lat, lon, alt));
             }
           } else {
-            System.out.println("[C++ Output]: " + line);
+            System.out.println("[Motor Orbital C++]: " + line);
           }
         }
       }
@@ -73,7 +78,7 @@ public class OrbitCalculatorService {
       process.waitFor();
 
     } catch (Exception e) {
-      System.err.println("Error al ejecutar el motor C++ Kepler + J2: " + e.getMessage());
+      System.err.println("Error al ejecutar el Motor Orbital C++ (Kepler + J2): " + e.getMessage());
     }
 
     return updatedSatellites;

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Trabajar siempre desde la raíz del proyecto (este script vive en bash/)
+# Trabajar siempre desde la raíz del proyecto (este script vive en tle-collector/)
 cd "$(dirname "$0")/.." || exit 1
 
 # Cargar variables de entorno desde .env
@@ -18,11 +18,11 @@ OUTPUT_DIR="./data"
 mkdir -p "$OUTPUT_DIR"
 
 # URL de CelesTrak para el grupo STATIONS
-CELESTRAK_URL="https://celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=TLE"
+CELESTRAK_URL="https://celestrak.org/NORAD/elements/gp.php?GROUP=VISUAL&FORMAT=TLE"
 OUTPUT_FILE="$OUTPUT_DIR/debris_tle.txt"
 
-# Cuántos objetos se inyectan en la base de datos (miniprueba)
-MAX_SATELLITES=5
+# Cuántos objetos se inyectan en la base de datos
+MAX_SATELLITES=15
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Descargando datos TLE desde CelesTrak..."
 curl -sfS "$CELESTRAK_URL" -o "$OUTPUT_FILE"
@@ -117,7 +117,7 @@ for norad_id, name, line1, line2, _ in selected:
 db.commit()
 cursor.close()
 db.close()
-print(f"¡{len(selected)} satélites inyectados correctamente en MySQL desde Bash!")
+print(f"¡{len(selected)} satélites inyectados correctamente en MySQL desde el Módulo Recolector!")
 PYEOF
 
 else

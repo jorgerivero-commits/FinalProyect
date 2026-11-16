@@ -1,28 +1,35 @@
 package com.spacedebris.model;
 
 public class Satellite {
+  private static final double MU = 398600.4418; // km^3/s^2
+  private static final double EARTH_RADIUS_KM = 6378.137; // km
+
   private int id;
   private String name;
   private double latitude;
   private double longitude;
   private double altitude;
+  private double velocity;
   private String tleLine1;
   private String tleLine2;
 
-  // Constructor vacío
   public Satellite() {
   }
 
-  // Constructor con coordenadas (el que ya usabas)
   public Satellite(int id, String name, double latitude, double longitude, double altitude) {
     this.id = id;
     this.name = name;
     this.latitude = latitude;
     this.longitude = longitude;
-    this.altitude = altitude;
+    setAltitude(altitude);
   }
 
-  // Getters y Setters existentes...
+  private static double computeOrbitalVelocity(double altitudeKm) {
+    double r = EARTH_RADIUS_KM + Math.max(0.0, altitudeKm);
+    double v = Math.sqrt(MU / r);
+    return Math.round(v * 1000.0) / 1000.0;
+  }
+
   public int getId() {
     return id;
   }
@@ -61,9 +68,17 @@ public class Satellite {
 
   public void setAltitude(double altitude) {
     this.altitude = altitude;
+    this.velocity = computeOrbitalVelocity(altitude);
   }
 
-  // NUEVOS Getters y Setters para las líneas TLE
+  public double getVelocity() {
+    return velocity;
+  }
+
+  public void setVelocity(double velocity) {
+    this.velocity = velocity;
+  }
+
   public String getTleLine1() {
     return tleLine1;
   }

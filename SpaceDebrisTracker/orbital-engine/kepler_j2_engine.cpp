@@ -158,8 +158,16 @@ Position propagate(const Tle& t, double unixTime) {
 
 }  // namespace
 
-int main() {
-    double now = static_cast<double>(std::time(nullptr));
+int main(int argc, char* argv[]) {
+    double targetTime = static_cast<double>(std::time(nullptr));
+    if (argc > 1) {
+        try {
+            targetTime = std::stod(argv[1]);
+        } catch (...) {
+            std::cerr << "Aviso: Timestamp invalido '" << argv[1]
+                      << "', usando hora actual del sistema." << std::endl;
+        }
+    }
 
     std::string lineId, name, line1, line2;
     int procesados = 0;
@@ -191,14 +199,14 @@ int main() {
             continue;
         }
 
-        double edadDias = (now - tle.epochUnix) / 86400.0;
+        double edadDias = (targetTime - tle.epochUnix) / 86400.0;
         if (std::fabs(edadDias) > 30.0) {
-            std::cerr << "Aviso: TLE de " << name << " tiene " << std::fixed << std::setprecision(1)
-                      << edadDias << " dias de antiguedad; la posicion sera imprecisa. Ejecuta fetch_tle.sh."
+            std::cerr << "Aviso: TLE de " << name << " proyectado a " << std::fixed << std::setprecision(1)
+                      << edadDias << " dias desde su epoca; la posicion es aproximada."
                       << std::setprecision(4) << std::endl;
         }
 
-        Position pos = propagate(tle, now);
+        Position pos = propagate(tle, targetTime);
 
         std::cout << "DEBRIS_DATA:" << id << "|" << name << "|"
                   << pos.lat << "|" << pos.lon << "|" << pos.alt << std::endl;

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 public class DatabaseService {
-  // Configuración leída desde variables de entorno (cargadas desde .env)
   private static final String HOST = getEnvOrDefault("DB_HOST", "localhost");
   private static final String PORT = getEnvOrDefault("DB_PORT", "3306");
   private static final String DB_NAME = getEnvOrDefault("DB_NAME", "space_debris_db");
@@ -54,13 +53,12 @@ public class DatabaseService {
         ResultSet rs = stmt.executeQuery(query)) {
 
       while (rs.next()) {
-        int id = rs.getInt("norad_cat_id");
-        String name = rs.getString("object_name");
-        double lat = rs.getDouble("lat");
-        double lon = rs.getDouble("lon");
-        double alt = rs.getDouble("alt");
-
-        list.add(new Satellite(id, name, lat, lon, alt));
+        list.add(new Satellite(
+            rs.getInt("norad_cat_id"),
+            rs.getString("object_name"),
+            rs.getDouble("lat"),
+            rs.getDouble("lon"),
+            rs.getDouble("alt")));
       }
       System.out.println("✅ [DatabaseService] Satélites consultados con éxito: " + list.size());
     } catch (SQLException e) {
@@ -78,17 +76,11 @@ public class DatabaseService {
         ResultSet rs = stmt.executeQuery(query)) {
 
       while (rs.next()) {
-        int id = rs.getInt("norad_cat_id");
-        String name = rs.getString("object_name");
-        String line1 = rs.getString("tle_line1");
-        String line2 = rs.getString("tle_line2");
-
         Satellite sat = new Satellite();
-        sat.setId(id);
-        sat.setName(name);
-        sat.setTleLine1(line1);
-        sat.setTleLine2(line2);
-
+        sat.setId(rs.getInt("norad_cat_id"));
+        sat.setName(rs.getString("object_name"));
+        sat.setTleLine1(rs.getString("tle_line1"));
+        sat.setTleLine2(rs.getString("tle_line2"));
         list.add(sat);
       }
     } catch (SQLException e) {
@@ -97,20 +89,31 @@ public class DatabaseService {
     return list;
   }
 
-  public void saveOrbitalPosition(int noradCatId, double latitude, double longitude, double altitude) {
+  public void saveAllOrbitalPositions(List<Satellite> satellites) {
+    if (satellites == null || satellites.isEmpty()) {
+      return;
+    }
+
     String query = "INSERT INTO orbital_positions (norad_cat_id, latitude, longitude, altitude) VALUES (?, ?, ?, ?)";
 
-    try (Connection conn = connect();
-        PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-      pstmt.setInt(1, noradCatId);
-      pstmt.setDouble(2, latitude);
-      pstmt.setDouble(3, longitude);
-      pstmt.setDouble(4, altitude);
-
-      pstmt.executeUpdate();
+    try (Connection conn = connect()) {
+      conn.setAutoCommit(false);
+      try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        for (Satellite sat : satellites) {
+          pstmt.setInt(1, sat.getId());
+          pstmt.setDouble(2, sat.getLatitude());
+          pstmt.setDouble(3, sat.getLongitude());
+          pstmt.setDouble(4, sat.getAltitude());
+          pstmt.addBatch();
+        }
+        pstmt.executeBatch();
+        conn.commit();
+      } catch (SQLException e) {
+        conn.rollback();
+        throw e;
+      }
     } catch (SQLException e) {
-      System.err.println("❌ [DatabaseService] Error al guardar la posición orbital en MySQL: " + e.getMessage());
+      System.err.println("❌ [DatabaseService] Error al guardar lote de posiciones orbitales: " + e.getMessage());
     }
   }
 

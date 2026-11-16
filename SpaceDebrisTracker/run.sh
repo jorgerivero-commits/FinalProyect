@@ -23,11 +23,11 @@ if [ ! -d "$FX_PATH" ]; then
   exit 1
 fi
 
-echo "Compilando motor de propagación C++ (Kepler + J2)..."
-mkdir -p cpp
-g++ -O2 -std=c++17 -o cpp/kepler_j2_engine cpp/kepler_j2_engine.cpp
+echo "Compilando Motor Orbital C++ (Kepler + J2)..."
+mkdir -p orbital-engine
+g++ -O2 -std=c++17 -o orbital-engine/kepler_j2_engine orbital-engine/kepler_j2_engine.cpp
 if [ $? -ne 0 ]; then
-  echo "❌ Error compilando el motor C++. Revisa los errores anteriores."
+  echo "❌ Error compilando el Motor Orbital C++. Revisa los errores anteriores."
   exit 1
 fi
 
@@ -37,11 +37,11 @@ mkdir -p bin
 
 MYSQL_JAR="lib/mysql-connector-j.jar"
 
-echo "Compilando clases Java con soporte JavaFX y MySQL..."
+echo "Compilando Centro de Control JavaFX y servicios..."
 javac --module-path "$FX_PATH" \
   --add-modules javafx.controls,javafx.graphics,javafx.base \
   -cp "bin:$MYSQL_JAR" \
-  $(find java -name "*.java") -d bin
+  $(find control-center -name "*.java") -d bin
 
 if [ $? -eq 0 ]; then
   echo "¡Compilación exitosa! Iniciando Space Debris Tracker..."
