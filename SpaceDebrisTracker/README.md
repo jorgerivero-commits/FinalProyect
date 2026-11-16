@@ -23,7 +23,7 @@
 | **Language / Development Environment:** | **Java** (with **JavaFX** for the graphical user interface and **JDBC** for persistence), integrated with **C++17** (Kepler + J2 orbital calculation engine), **Bash / Python** (data extraction), and **MySQL 8.0+** on a Linux/Ubuntu environment.
 
  |
-| **Git Repository (URL):** | (https://github.com/jorgerivero-commits/Final-Proyect) |
+| **Git Repository (URL):** | (https://github.com/jorgerivero-commits/FinalProyect) |
 | **Use of Artificial Intelligence:** | ☐ No   ☑ Yes (describe below) |
 | **If you use AI, briefly explain how and at which stage it contributes:** | AI was used as a support tool to structure the modular architecture of the project, integrate communication between Java, MySQL, and the C++ orbital engine, verify the application of OOP principles, and draft the technical documentation. |
 
