@@ -1,125 +1,66 @@
-# Initial Project Proposal – Object-Oriented Programming
+# Propuesta Inicial de Proyecto – Programación Orientada a Objetos
 
-* **Degree Programme:** Software Engineering
-* **Module:** Programming II
-* **Term:** Second Midterm / Final Project
-* **Student(s):** Jorge Rivero Justiniano
-* **Submission Date:** 14 November 2026
-
----
-
-## 1. General Project Information
-
-| Field | Description |
-| --- | --- |
-| **Project Name:** | **Space Debris Tracker** (Space Control Centre)
-
- |
-| **Application Type:** | ☑ Desktop (with an automated web ingestion script and external mathematical engine)
-
-<br>
-
-<br> ☐ Web   ☐ Mobile   ☐ Other: __________ |
-| **Language / Development Environment:** | **Java** (with **JavaFX** for the graphical user interface and **JDBC** for persistence), integrated with **C++17** (Kepler + J2 orbital calculation engine), **Bash / Python** (data extraction), and **MySQL 8.0+** on a Linux/Ubuntu environment.
-
- |
-| **Git Repository (URL):** | (https://github.com/jorgerivero-commits/FinalProyect) |
-| **Use of Artificial Intelligence:** | ☐ No   ☑ Yes (describe below) |
-| **If you use AI, briefly explain how and at which stage it contributes:** | AI was used as a support tool to structure the modular architecture of the project, integrate communication between Java, MySQL, and the C++ orbital engine, verify the application of OOP principles, and draft the technical documentation. |
+* **Carrera:** Ingeniería de Software[cite: 15]
+* **Materia:** Programación II[cite: 15]
+* **Periodo:** Segundo Parcial / Proyecto Final[cite: 15]
+* **Estudiante(s):** Jorge Rivero Justiniano[cite: 15]
+* **Fecha de entrega:** 2026-11-14[cite: 15]
 
 ---
 
-## 2. Project Description
+## 1. Datos Generales del Proyecto
 
-### Brief Summary
-
-**Space Debris Tracker** is a desktop application that tracks and simulates the orbital positions of satellites and space stations. The system addresses the complexity of interpreting raw orbital data (TLE format) by automating its download from the web (CelesTrak) into a MySQL database. Using the stored records, the application executes a physics engine based on Kepler's laws and J2 perturbations to compute the future coordinates of each object. Finally, it displays the results in a periodically updated telemetry table and a 2D graph plotting altitude against longitude.
-
-### Main Objectives
-
-1. **Automated ingestion and storage:** Extract real orbital data (TLE elements) from the web (CelesTrak) and store them in a relational MySQL database, filtering objects with distinct orbits to prevent overlapping.
-
-
-2. **Simulation and calculation of future coordinates:** Use the TLE data stored in the database to feed an orbital propagation engine (Kepler + J2) that computes the new geographical coordinates (latitude, longitude, and altitude) of the satellites.
-
-
-3. **Tabular and graphical visualisation:** Display the simulated coordinates in a desktop interface via a structured data table and a 2D orbital graph (Altitude vs. Longitude) showing the projected location of each satellite in real time.
-
-
+| Campo | Descripción |
+| :--- | :--- |
+| **Nombre del proyecto:** | **Space Debris Tracker** (Centro de Control Espacial)[cite: 5, 7, 15] |
+| **Tipo de aplicación:** | ☑ Escritorio (con script automatizado de ingesta web y motor matemático externo)[cite: 13, 14, 15]<br>☐ Web ☐ Móvil ☐ Otro: __________ |
+| **Lenguaje / entorno de desarrollo:** | **Java** (con **JavaFX** para la interfaz gráfica, **JDBC** para persistencia y `ScheduledService`/`Task` para concurrencia)[cite: 2, 6, 15], integrado con **C++17** (motor de cálculo orbital Kepler + J2)[cite: 11, 14, 15], **Bash / Python** (extracción y filtrado de datos TLE)[cite: 13, 15] y **MySQL 8.0+** en entorno Linux/Ubuntu[cite: 12, 15]. |
+| **Repositorio Git (URL):** | https://github.com/jorgerivero-commits/FinalProyect[cite: 15] |
+| **Uso de Inteligencia Artificial:** | ☐ No ☑ Sí[cite: 15] |
+| **Si usas IA, explica brevemente cómo y en qué etapa contribuye:** | Se utilizó IA como herramienta de apoyo para estructurar la arquitectura modular del proyecto, integrar la comunicación entre Java, MySQL y el motor orbital en C++, verificar la aplicación de principios de POO y redactar la documentación técnica[cite: 15]. |
 
 ---
 
-## 3. Technical Design and Application of OOP
+## 2. Descripción del Proyecto
 
-### Applied OOP Principles
+### Resumen breve
 
-* ☑ **Encapsulation (private attributes and public methods):** Implemented in the `Satellite` model class through private attributes (`id`, `name`, `latitude`, `longitude`, `altitude`, `tleLine1`, `tleLine2`) protected with public getters and setters, as well as in the service and controller classes (`DatabaseService`, `OrbitCalculatorService`, and `MapController`).
+**Space Debris Tracker** es una aplicación de escritorio dirigida a estudiantes, investigadores y entusiastas de la ingeniería aeroespacial que permite rastrear, visualizar y proyectar en el tiempo la posición orbital de satélites y desechos espaciales[cite: 7, 15]. El sistema resuelve la complejidad de interpretar datos orbitales crudos en formato TLE automatizando su descarga desde CelesTrak hacia una base de datos MySQL y ejecutando un motor físico en C++17 basado en las leyes de Kepler y perturbaciones seculares $J_2$[cite: 11, 13, 15]. Los resultados—incluyendo coordenadas geodésicas y velocidad orbital—se muestran en una tabla de telemetría y un gráfico 2D de Altitud vs. Longitud con soporte para saltos temporales[cite: 1, 7, 8, 9, 10, 15].
 
+### Objetivos principales
 
-* ☑ **Use of constructors:** Applied in the `Satellite` class via constructor overloading: an empty constructor to instantiate objects when reading TLEs from MySQL, and a parameterised constructor to initialise satellites with their calculated coordinates.
-
-
-* ☑ **Inheritance:** Applied in the main `MainApp` class, which inherits from `javafx.application.Application` (`extends Application`) to initialise and manage the lifecycle of the primary window.
-
-
-* ☑ **Polymorphism:** Applied by overriding the `start(Stage primaryStage)` method (`@Override`) in `MainApp` and through the polymorphic use of event handlers (`EventHandler`) in the JavaFX interface controls and timers.
-
-
-* ☐ **Interfaces or abstract classes:** (No custom interfaces or abstract classes were defined in the domain model; only standard JavaFX functional interfaces are used for UI events).
-
-
-
-### Data Persistence
-
-* ☑ **Database:** Relational **MySQL** database (`space_debris_db`) connected via JDBC (`mysql-connector-j.jar`), structured into the `space_debris` table (TLE catalogue) and `orbital_positions` table (history of calculated positions).
-
-
-* ☑ **Local files:** Temporary text file `./data/debris_tle.txt` used as a local buffer during download from CelesTrak prior to injecting records into MySQL.
-
-
-* ☐ **In-memory (temporary)**
-* ☐ **Other:** __________
+1. **Ingesta y filtrado automatizado de datos orbitales:** Extraer elementos TLE reales desde CelesTrak (grupo `VISUAL`) mediante un script en Bash/Python (`tle-collector/fetch_tle.sh`) y almacenarlos en MySQL filtrando hasta 15 satélites con órbitas distintas para evitar superposiciones[cite: 12, 13, 15].
+2. **Propagación física y proyección temporal de coordenadas:** Alimentar un motor orbital en C++17 (`orbital-engine/kepler_j2_engine`) con los TLE almacenados y una época Unix objetivo para calcular latitud, longitud y altitud WGS84 tanto en tiempo real como en proyecciones hacia fechas futuras o pasadas[cite: 3, 4, 10, 11, 15].
+3. **Visualización tabular y gráfica de telemetría:** Presentar las coordenadas simuladas y la velocidad orbital calculada ($\text{km/s}$) en una interfaz JavaFX mediante una tabla estructurada (`SatelliteTableView`) y un gráfico orbital 2D de Altitud vs. Longitud (`OrbitChartView`)[cite: 1, 7, 8, 9, 15].
 
 ---
 
-## 4. Main Functionalities
+## 3. Diseño Técnico y Aplicación de POO
 
-| No. | Functionality Name | Brief Description | Current Status |
-| --- | --- | --- | --- |
-| **1** | **Web TLE data download and ingestion** | Automated script (`fetch_tle.sh`) that downloads orbital elements from CelesTrak, filters up to 5 satellites with distinct orbits, and saves them to MySQL.
+### Principios de POO aplicados
 
- | ☐ Planned <br>
+* ☑ **Encapsulamiento (atributos privados y métodos públicos):** Implementado en la clase modelo `Satellite` mediante atributos privados (`id`, `name`, `latitude`, `longitude`, `altitude`, `velocity`, `tleLine1`, `tleLine2`) y constantes físicas (`MU`, `EARTH_RADIUS_KM`) protegidos con getters y setters (donde `setAltitude()` calcula automáticamente `velocity`)[cite: 1], así como en los servicios (`DatabaseService`, `OrbitCalculatorService`, `SimulationService`) y componentes visuales (`MapController`, `MainView`, `OrbitChartView`, `SatelliteTableView`, `TimeJumpDialog`)[cite: 2, 3, 4, 6, 7, 8, 9, 10, 15].
+* ☑ **Uso de constructores:** Aplicado en la clase `Satellite` mediante sobrecarga de constructores: un constructor vacío `Satellite()` para instanciar objetos al leer TLEs crudos desde MySQL y un constructor parametrizado `Satellite(int id, String name, double latitude, double longitude, double altitude)` para inicializar satélites con sus coordenadas calculadas[cite: 1, 2, 3, 15].
+* ☑ **Herencia:** Aplicada en `MainApp` (`extends Application`) para gestionar el ciclo de vida de la ventana principal[cite: 5, 15], en todas las vistas personalizadas de JavaFX (`MainView extends BorderPane`, `OrbitChartView extends Pane`, `SatelliteTableView extends TableView<Satellite>`, `TimeJumpDialog extends Dialog<TimeJumpResult>`)[cite: 7, 8, 9, 10], y en las subclases anónimas de `ScheduledService` y `Task` dentro de `MapController` para ejecutar tareas en hilos secundarios[cite: 6].
+* ☑ **Polimorfismo:** Aplicado mediante sobreescritura (`@Override`) en `MainApp.start(Stage)`[cite: 5, 15] y en los métodos `createTask()` y `call()` de `MapController`[cite: 6]; mediante sobrecarga en `OrbitCalculatorService.propagateOrbits(...)`[cite: 3] y en los constructores de `Satellite`[cite: 1]; y mediante polimorfismo de subtipos al integrar `OrbitChartView` y `SatelliteTableView` como nodos (`Node`/`Parent`) dentro de `MainView` y `Scene`[cite: 5, 6, 7, 8, 9].
+* ☐ **Interfaces o clases abstractas:** No se definieron interfaces ni clases abstractas propias en el modelo de dominio[cite: 15]; se utilizan interfaces funcionales estándar de Java (`Runnable`, `BiConsumer<Long, String>`, `Callable`) para desacoplar las acciones de `MainView` y `TimeJumpDialog` respecto a `MapController`[cite: 6, 7, 10], además de abstracción por capas entre los servicios de datos y cálculo[cite: 2, 3, 4].
 
-<br> ☑ In development |
-| **2** | **MySQL persistence management** | `DatabaseService` class responsible for querying raw TLEs, logging each coordinate simulation into the history table (`orbital_positions`), and retrieving the latest positions.
+### Persistencia de datos
 
- | ☐ Planned <br>
-
-<br> ☑ In development |
-| **3** | **Orbital simulation engine (Kepler + J2)** | Execution from Java (`OrbitCalculatorService`) of the compiled C++ engine (`kepler_j2_engine`) to calculate future latitude, longitude, and altitude from TLEs.
-
- | ☐ Planned <br>
-
-<br> ☑ In development |
-| **4** | **Data table and 2D orbital graph** | JavaFX interface (`MapController`) featuring two tabs: a data table (`TableView`) with each satellite's numerical values and a `Canvas` chart plotting Altitude (km) vs. Longitude (°).
-
- | ☐ Planned <br>
-
-<br> ☑ In development |
-| **5** | **Automatic updates and manual controls** | Automated loop (`Timeline`) that recalculates and refreshes the table and graph every 5 seconds, alongside buttons to force simulation, pause, resume, or reload from the database.
-
- | ☐ Planned <br>
-
- ### Cross-Platform Notes (Linux / macOS / Windows)
-
-- **Linux & macOS:** Run `./bash/fetch_tle.sh` and `./run.sh` directly in a Bash terminal.
-- **Windows (Git Bash / WSL):** Both `.sh` scripts work out of the box inside Git Bash or WSL.
-- **Windows (PowerShell / CMD):** Set the environment variables from `.env` in your session, compile the C++ engine as `.exe`, and run Java using `;` as the classpath separator:
-  powershell
-  g++ -O2 -std=c++17 -o cpp/kepler_j2_engine.exe cpp/kepler_j2_engine.cpp
-  javac --module-path "$env:FX_PATH" --add-modules javafx.controls,javafx.graphics,javafx.base -cp "bin;lib/mysql-connector-j.jar" java/com/spacedebris/model/*.java java/com/spacedebris/service/*.java java/com/spacedebris/ui/*.java -d bin
-  java --module-path "$env:FX_PATH" --add-modules javafx.controls,javafx.graphics,javafx.base -cp "bin;lib/mysql-connector-j.jar" com.spacedebris.ui.MainApp
-
-<br> ☑ In development |
+* ☑ **Archivos locales:** Archivo de texto temporal `./data/debris_tle.txt` utilizado como búfer local al descargar los conjuntos TLE desde CelesTrak antes de filtrarlos e inyectarlos en MySQL[cite: 13, 15].
+* ☑ **Base de datos:** Base de datos relacional **MySQL** (`space_debris_db`, definida en `schema.sql`) conectada vía JDBC (`lib/mysql-connector-j.jar`), estructurada en las tablas `space_debris` (catálogo de TLEs) y `orbital_positions` (historial de posiciones calculadas con integridad referencial `ON DELETE CASCADE`)[cite: 2, 12, 14, 15].
+* ☑ **En memoria (temporal):** Estado activo del desplazamiento temporal (`timeOffsetSeconds`, `offsetDescription`) mantenido en `SimulationService`[cite: 4] y colecciones observables (`ObservableList<Satellite>`) vinculadas a la interfaz JavaFX[cite: 9].
+* ☐ **Otro:** __________
 
 ---
+
+## 4. Funcionalidades Principales
+
+| Nº | Nombre de la funcionalidad | Descripción breve | Estado actual |
+| :--- | :--- | :--- | :--- |
+| **1** | **Descarga y filtrado web de datos TLE** | Script automatizado (`tle-collector/fetch_tle.sh`) en Bash y Python que descarga elementos orbitales desde CelesTrak (grupo `VISUAL`), filtra hasta **15 satélites** con órbitas distintas y los guarda en MySQL[cite: 13, 15]. | ☐ Planeada ☐ En desarrollo ☑ Implementada |
+| **2** | **Gestión de persistencia en MySQL** | Clase `DatabaseService` encargada de consultar TLEs crudos, registrar lotes de coordenadas simuladas en `orbital_positions` mediante transacciones JDBC y recuperar las últimas posiciones[cite: 2, 15]. | ☐ Planeada ☐ En desarrollo ☑ Implementada |
+| **3** | **Motor de propagación orbital (Kepler + J2)** | Ejecución desde Java (`OrbitCalculatorService`) del binario compilado en C++17 (`orbital-engine/kepler_j2_engine`) para calcular latitud, longitud y altitud WGS84 a partir de los TLE[cite: 3, 11, 14, 15]. | ☐ Planeada ☐ En desarrollo ☑ Implementada |
+| **4** | **Tabla de telemetría y gráfico orbital 2D** | Interfaz JavaFX (`MainView`) con dos pestañas: `SatelliteTableView` (muestra ID, nombre, latitud, longitud, altitud y velocidad orbital en $\text{km/s}$) y `OrbitChartView` (gráfico `Canvas` de Altitud vs. Longitud)[cite: 1, 7, 8, 9, 15]. | ☐ Planeada ☐ En desarrollo ☑ Implementada |
+| **5** | **Simulación automática y controles manuales** | Bucle automático en `MapController` (`ScheduledService` y `Task` cada 5 segundos en hilos secundarios) junto con botones para forzar simulación, pausar, reanudar o recargar desde MySQL[cite: 6, 7, 15]. | ☐ Planeada ☐ En desarrollo ☑ Implementada |
+| **6** | **Proyección temporal (Viaje en el tiempo)** | Permite simular posiciones futuras o pasadas mediante intervalos predefinidos (`+1 Hora` a `+1 Año`) en `MainView` o saltos personalizados por duración y fecha exacta en calendario mediante `TimeJumpDialog`[cite: 4, 7, 10]. | ☐ Planeada ☐ En desarrollo ☑ Implementada |

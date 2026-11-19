@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DatabaseService {
+
   private static final String HOST = getEnvOrDefault("DB_HOST", "localhost");
   private static final String PORT = getEnvOrDefault("DB_PORT", "3306");
   private static final String DB_NAME = getEnvOrDefault("DB_NAME", "space_debris_db");
@@ -37,17 +38,16 @@ public class DatabaseService {
   public List<Satellite> getAllSatellites() {
     List<Satellite> list = new ArrayList<>();
     String query = "SELECT d.norad_cat_id, d.object_name, " +
-        "IFNULL(p.latitude, 0.0) as lat, " +
-        "IFNULL(p.longitude, 0.0) as lon, " +
-        "IFNULL(p.altitude, 400.0) as alt " +
-        "FROM space_debris d " +
-        "LEFT JOIN orbital_positions p ON d.norad_cat_id = p.norad_cat_id " +
-        "AND p.id = (" +
-        "    SELECT MAX(p2.id) " +
-        "    FROM orbital_positions p2 " +
-        "    WHERE p2.norad_cat_id = d.norad_cat_id" +
-        ")";
-
+            "IFNULL(p.latitude, 0.0) as lat, " +
+            "IFNULL(p.longitude, 0.0) as lon, " +
+            "IFNULL(p.altitude, 400.0) as alt " +
+            "FROM space_debris d " +
+            "LEFT JOIN orbital_positions p ON d.norad_cat_id = p.norad_cat_id " +
+            "AND p.id = (" +
+            "    SELECT MAX(p2.id) " +
+            "    FROM orbital_positions p2 " +
+            "    WHERE p2.norad_cat_id = d.norad_cat_id" +
+            ")";
     try (Connection conn = connect();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query)) {
